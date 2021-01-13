@@ -8,7 +8,7 @@
   
 __著作権__  
 このプログラムの著作権は、mScroll が有します。  
-　　　COPYRIGHT (c) 2020 mScroll  
+　　　COPYRIGHT (c) mScroll  
 　　　https://www.mscroll.net/lib/  
 ただし、このプログラムの全部または一部の複製、使用、変更および配布を著作権者に対価を支払うことなく行うことができます。  
   
