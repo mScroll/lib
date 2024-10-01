@@ -1,5 +1,5 @@
 ﻿/*
- * 1.0.102.0
+ * 1.0.103.0
  * COPYRIGHT (c) 2022 mScroll
  */
 
@@ -3808,7 +3808,7 @@ var _GET_SIGNATURE;
 
          _State = _PATH_VALIDATION;
 
-         return (false);
+         return (true);
          }
 
       v = v[6];
@@ -3822,7 +3822,7 @@ var _GET_SIGNATURE;
       _CRLPath[u] = _EOF;
       _CRLPathsPtr = 0;
 
-      for (s = 0; s < _X509CRLs[_LENGTH]; ++ s)
+      for (s = _X509CRLs[_LENGTH] - 1; 0 <= s; -- s)
          {
          v = _X509CRLs[s];
          x = v[5][0];
@@ -3987,7 +3987,8 @@ var _GET_SIGNATURE;
          {
          u = _X509Certs[_Response];
 
-         if (u[2][0] === u[4][0])
+         if (_Response in _Checked
+               || u[2][0] === u[4][0])
             {
             if (_AiaPtr < _Aia[_LENGTH])
                {
