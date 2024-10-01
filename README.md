@@ -1,7 +1,5 @@
 ﻿公式サイト:  
 [https://www.mscroll.net/lib/](https://www.mscroll.net/lib/)  
-※次の URL も利用可能です。  
-[https://ae.mscroll.net/lib/](https://ae.mscroll.net/lib/)  
   
 ## 使用条件  
 以下の使用条件をご確認ください。  
