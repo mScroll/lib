@@ -1,5 +1,5 @@
 ﻿/*
- * 1.0.103.0
+ * 1.0.104.0
  * COPYRIGHT (c) 2022 mScroll
  */
 
@@ -55,6 +55,9 @@ var _ID_RSA;
 var _ID_SHA1RSA;
 var _ID_SHA256RSA;
 var _ID_ED25519;
+var _ID_MLDSA44;
+var _ID_MLDSA65;
+var _ID_MLDSA87;
 var _DIGITAL_SIGNATURE;
 var _NON_REPUDIATION;
 var _KEY_ENCIPHERMENT;
@@ -165,6 +168,9 @@ var _OID_CRLNUMBER;
 var _OID_CRLREASON;
 var _OID_CRLDISTRIBUTIONPOINTS;
 var _OID_AUTHORITYKEYIDENTIFIER;
+var _OID_MLDSA44;
+var _OID_MLDSA65;
+var _OID_MLDSA87;
 var _OIDLIST;
 var _IDLIST;
 var _DN_STRINGLIST;
@@ -248,6 +254,9 @@ var _GET_SIGNATURE;
 /* static const int */ _ID_SHA1RSA = _ENUMS();
 /* static const int */ _ID_SHA256RSA = _ENUMS();
 /* static const int */ _ID_ED25519 = _ENUMS();
+/* static const int */ _ID_MLDSA44 = _ENUMS();
+/* static const int */ _ID_MLDSA65 = _ENUMS();
+/* static const int */ _ID_MLDSA87 = _ENUMS();
 /* static const int */ _DIGITAL_SIGNATURE = 0x8000;
 /* static const int */ _NON_REPUDIATION = 0x4000;
 /* static const int */ _KEY_ENCIPHERMENT = 0x2000;
@@ -358,8 +367,14 @@ var _GET_SIGNATURE;
 /* static const char[] */ _OID_CRLREASON = [0x55, 0x1D, 0x15];
 /* static const char[] */ _OID_CRLDISTRIBUTIONPOINTS = [0x55, 0x1D, 0x1F];
 /* static const char[] */ _OID_AUTHORITYKEYIDENTIFIER = [0x55, 0x1D, 0x23];
+/* static const char[] */ _OID_MLDSA44 = [0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x03, 0x11];
+/* static const char[] */ _OID_MLDSA65 = [0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x03, 0x12];
+/* static const char[] */ _OID_MLDSA87 = [0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x03, 0x13];
 /* static const char[][] */ _OIDLIST =
    [
+   _OID_MLDSA87,
+   _OID_MLDSA65,
+   _OID_MLDSA44,
    _OID_ED25519,
    _OID_SHA256RSA,
    _OID_SHA1RSA,
@@ -367,6 +382,9 @@ var _GET_SIGNATURE;
    ];
 /* static const int[] */ _IDLIST =
    [
+   _ID_MLDSA87,
+   _ID_MLDSA65,
+   _ID_MLDSA44,
    _ID_ED25519,
    _ID_SHA256RSA,
    _ID_SHA1RSA,
@@ -537,7 +555,25 @@ var _GET_SIGNATURE;
       /* int */Id_,
       /* std::vector */Bs_)
    {
-   if (Id_ === _ID_ED25519)
+   if (Id_ === _ID_MLDSA87)
+      {
+      _ASN1TAG(_SEQUENCE, _OID_MLDSA87[_LENGTH] + 2, Bs_);
+      _ASN1TAG(_OID, _OID_MLDSA87[_LENGTH], Bs_);
+      _ATE(_OID_MLDSA87, Bs_);
+      }
+   else if (Id_ === _ID_MLDSA65)
+      {
+      _ASN1TAG(_SEQUENCE, _OID_MLDSA65[_LENGTH] + 2, Bs_);
+      _ASN1TAG(_OID, _OID_MLDSA65[_LENGTH], Bs_);
+      _ATE(_OID_MLDSA65, Bs_);
+      }
+   else if (Id_ === _ID_MLDSA44)
+      {
+      _ASN1TAG(_SEQUENCE, _OID_MLDSA44[_LENGTH] + 2, Bs_);
+      _ASN1TAG(_OID, _OID_MLDSA44[_LENGTH], Bs_);
+      _ATE(_OID_MLDSA44, Bs_);
+      }
+   else if (Id_ === _ID_ED25519)
       {
       _ASN1TAG(_SEQUENCE, _OID_ED25519[_LENGTH] + 2, Bs_);
       _ASN1TAG(_OID, _OID_ED25519[_LENGTH], Bs_);
@@ -691,7 +727,10 @@ var _GET_SIGNATURE;
    var u;
    var v;
 
-   if (Id_ === _ID_ED25519)
+   if (Id_ === _ID_MLDSA87
+         || Id_ === _ID_MLDSA65
+         || Id_ === _ID_MLDSA44
+         || Id_ === _ID_ED25519)
       {
       return (Public_);
       }
@@ -718,7 +757,18 @@ var _GET_SIGNATURE;
    var u;
    var v;
 
-   if (Id_ === _ID_ED25519)
+   if (Id_ === _ID_MLDSA87
+         || Id_ === _ID_MLDSA65
+         || Id_ === _ID_MLDSA44)
+      {
+      u = _PUBLIC(Id_, Public_);
+      _ASN1TAG(_SEQUENCE, u[_LENGTH] + 18, Bs_);
+      _ALGORITHM_IDENTIFIER(Id_, Bs_);
+      _ASN1TAG(_BITSTRING, u[_LENGTH] + 1, Bs_);
+      Bs_.ate(0, 8);
+      _ATE(u, Bs_);
+      }
+   else if (Id_ === _ID_ED25519)
       {
       u = _PUBLIC(Id_, Public_);
       _ASN1TAG(_SEQUENCE, u[_LENGTH] + 10, Bs_);
@@ -747,8 +797,52 @@ var _GET_SIGNATURE;
    {
    var u;
    var v;
+   var w;
 
-   if (Id_ === _ID_ED25519)
+   if (Id_ === _ID_MLDSA87
+         || Id_ === _ID_MLDSA65
+         || Id_ === _ID_MLDSA44)
+      {
+      if (Private_[1] === _NULL)
+         {
+         u = Private_[0];
+         _ASN1TAG(_SEQUENCE, u[_LENGTH] + 20, Bs_);
+         _ASN1TAG(_INTEGER, 1, Bs_);
+         Bs_.ate(0, 8);
+         _ALGORITHM_IDENTIFIER(Id_, Bs_);
+         _ASN1TAG(_OCTETSTRING, u[_LENGTH] + 2, Bs_);
+         _ASN1TAG(_PRIMITIVE_0, u[_LENGTH], Bs_);
+         _ATE(u, Bs_);
+         }
+      else if (Private_[0] === _NULL)
+         {
+         v = Private_[1];
+         _ASN1TAG(_SEQUENCE, v[_LENGTH] + 24, Bs_);
+         _ASN1TAG(_INTEGER, 1, Bs_);
+         Bs_.ate(0, 8);
+         _ALGORITHM_IDENTIFIER(Id_, Bs_);
+         _ASN1TAG(_OCTETSTRING, v[_LENGTH] + 4, Bs_);
+         _ASN1TAG(_OCTETSTRING, v[_LENGTH], Bs_);
+         _ATE(v, Bs_);
+         }
+      else
+         {
+         u = Private_[0];
+         v = Private_[1];
+         w = u[_LENGTH] + v[_LENGTH];
+         _ASN1TAG(_SEQUENCE, w + 30, Bs_);
+         _ASN1TAG(_INTEGER, 1, Bs_);
+         Bs_.ate(0, 8);
+         _ALGORITHM_IDENTIFIER(Id_, Bs_);
+         _ASN1TAG(_OCTETSTRING, w + 10, Bs_);
+         _ASN1TAG(_SEQUENCE, w + 6, Bs_);
+         _ASN1TAG(_OCTETSTRING, u[_LENGTH], Bs_);
+         _ATE(u, Bs_);
+         _ASN1TAG(_OCTETSTRING, v[_LENGTH], Bs_);
+         _ATE(v, Bs_);
+         }
+      }
+   else if (Id_ === _ID_ED25519)
       {
       _ASN1TAG(_SEQUENCE, Private_[_LENGTH] + 14, Bs_);
       _ASN1TAG(_INTEGER, 1, Bs_);
@@ -1161,14 +1255,11 @@ var _GET_SIGNATURE;
       /* int */Id_,
       /* const T */Signature_, /* std::vector */Bs_)
    {
-   if (Id_ === _ID_ED25519)
-      {
-      _ALGORITHM_IDENTIFIER(Id_, Bs_);
-      _ASN1TAG(_BITSTRING, Signature_[_LENGTH] + 1, Bs_);
-      Bs_.ate(0, 8);
-      _ATE(Signature_, Bs_);
-      }
-   else if (Id_ === _ID_SHA256RSA
+   if (Id_ === _ID_MLDSA87
+         || Id_ === _ID_MLDSA65
+         || Id_ === _ID_MLDSA44
+         || Id_ === _ID_ED25519
+         || Id_ === _ID_SHA256RSA
          || Id_ === _ID_SHA1RSA)
       {
       _ALGORITHM_IDENTIFIER(Id_, Bs_);
@@ -1750,7 +1841,10 @@ var _GET_SIGNATURE;
       return (_EOF);
       }
 
-   if (_OIDLIST[u] === _OID_ED25519)
+   if (_OIDLIST[u] === _OID_MLDSA87
+         || _OIDLIST[u] === _OID_MLDSA65
+         || _OIDLIST[u] === _OID_MLDSA44
+         || _OIDLIST[u] === _OID_ED25519)
       {
       return (_IDLIST[u]);
       }
@@ -1791,7 +1885,28 @@ var _GET_SIGNATURE;
 
    u[1] = _DATA(w + 1, v - 1, Bs_);
 
-   if (u[0] === _ID_ED25519)
+   if (u[0] === _ID_MLDSA87)
+      {
+      if (u[1][_LENGTH] !== 2592)
+         {
+         return (_NULL);
+         }
+      }
+   else if (u[0] === _ID_MLDSA65)
+      {
+      if (u[1][_LENGTH] !== 1952)
+         {
+         return (_NULL);
+         }
+      }
+   else if (u[0] === _ID_MLDSA44)
+      {
+      if (u[1][_LENGTH] !== 1312)
+         {
+         return (_NULL);
+         }
+      }
+   else if (u[0] === _ID_ED25519)
       {
       if (u[1][_LENGTH] !== 32)
          {
@@ -1867,7 +1982,166 @@ var _GET_SIGNATURE;
    w = Bs_.getptr();
    u[1] = _DATA(w, v, Bs_);
 
-   if (u[0] === _ID_ED25519)
+   if (u[0] === _ID_MLDSA87)
+      {
+      x = new _VECTOR(u[1]);
+      y = [];
+      u[1] = y;
+      z = x.read(8);
+
+      if (z === _PRIMITIVE_0)
+         {
+         if (_ASN1LEN(x) !== 32)
+            {
+            return (_NULL);
+            }
+
+         y[0] = _DATA(x.getptr(), 32, x);
+         y[1] = _NULL;
+         }
+      else if (z === _OCTETSTRING)
+         {
+         if (_ASN1LEN(x) !== 4896)
+            {
+            return (_NULL);
+            }
+
+         y[0] = _NULL;
+         y[1] = _DATA(x.getptr(), 4896, x);
+         }
+      else if (z === _SEQUENCE)
+         {
+         if (_ASN1LEN(x) !== 4934
+               || x.read(8) !== _OCTETSTRING
+               || _ASN1LEN(x) !== 32)
+            {
+            return (_NULL);
+            }
+
+         r = x.getptr();
+         y[0] = _DATA(r, 32, x);
+         x.seek(_EOF, r + 32);
+
+         if (x.read(8) !== _OCTETSTRING
+               || _ASN1LEN(x) !== 4896)
+            {
+            return (_NULL);
+            }
+
+         y[1] = _DATA(x.getptr(), 4896, x);
+         }
+      else
+         {
+         return (_NULL);
+         }
+      }
+   else if (u[0] === _ID_MLDSA65)
+      {
+      x = new _VECTOR(u[1]);
+      y = [];
+      u[1] = y;
+      z = x.read(8);
+
+      if (z === _PRIMITIVE_0)
+         {
+         if (_ASN1LEN(x) !== 32)
+            {
+            return (_NULL);
+            }
+
+         y[0] = _DATA(x.getptr(), 32, x);
+         y[1] = _NULL;
+         }
+      else if (z === _OCTETSTRING)
+         {
+         if (_ASN1LEN(x) !== 4032)
+            {
+            return (_NULL);
+            }
+
+         y[0] = _NULL;
+         y[1] = _DATA(x.getptr(), 4032, x);
+         }
+      else if (z === _SEQUENCE)
+         {
+         if (_ASN1LEN(x) !== 4070
+               || x.read(8) !== _OCTETSTRING
+               || _ASN1LEN(x) !== 32)
+            {
+            return (_NULL);
+            }
+
+         r = x.getptr();
+         y[0] = _DATA(r, 32, x);
+         x.seek(_EOF, r + 32);
+
+         if (x.read(8) !== _OCTETSTRING
+               || _ASN1LEN(x) !== 4032)
+            {
+            return (_NULL);
+            }
+
+         y[1] = _DATA(x.getptr(), 4032, x);
+         }
+      else
+         {
+         return (_NULL);
+         }
+      }
+   else if (u[0] === _ID_MLDSA44)
+      {
+      x = new _VECTOR(u[1]);
+      y = [];
+      u[1] = y;
+      z = x.read(8);
+
+      if (z === _PRIMITIVE_0)
+         {
+         if (_ASN1LEN(x) !== 32)
+            {
+            return (_NULL);
+            }
+
+         y[0] = _DATA(x.getptr(), 32, x);
+         y[1] = _NULL;
+         }
+      else if (z === _OCTETSTRING)
+         {
+         if (_ASN1LEN(x) !== 2560)
+            {
+            return (_NULL);
+            }
+
+         y[0] = _NULL;
+         y[1] = _DATA(x.getptr(), 2560, x);
+         }
+      else if (z === _SEQUENCE)
+         {
+         if (_ASN1LEN(x) !== 2598
+               || x.read(8) !== _OCTETSTRING
+               || _ASN1LEN(x) !== 32)
+            {
+            return (_NULL);
+            }
+
+         r = x.getptr();
+         y[0] = _DATA(r, 32, x);
+         x.seek(_EOF, r + 32);
+
+         if (x.read(8) !== _OCTETSTRING
+               || _ASN1LEN(x) !== 2560)
+            {
+            return (_NULL);
+            }
+
+         y[1] = _DATA(x.getptr(), 2560, x);
+         }
+      else
+         {
+         return (_NULL);
+         }
+      }
+   else if (u[0] === _ID_ED25519)
       {
       x = new _VECTOR(u[1]);
 
@@ -2669,7 +2943,28 @@ var _GET_SIGNATURE;
 
    u[1] = _DATA(w + 1, v - 1, Bs_);
 
-   if (u[0] === _ID_ED25519)
+   if (u[0] === _ID_MLDSA87)
+      {
+      if (u[1][_LENGTH] !== 4627)
+         {
+         return (_NULL);
+         }
+      }
+   else if (u[0] === _ID_MLDSA65)
+      {
+      if (u[1][_LENGTH] !== 3309)
+         {
+         return (_NULL);
+         }
+      }
+   else if (u[0] === _ID_MLDSA44)
+      {
+      if (u[1][_LENGTH] !== 2420)
+         {
+         return (_NULL);
+         }
+      }
+   else if (u[0] === _ID_ED25519)
       {
       if (u[1][_LENGTH] !== 64)
          {
@@ -2873,66 +3168,68 @@ var _GET_SIGNATURE;
  *             [0]   signature_id   (int)
  *             [1]   signature   (T)
  *
- *    class x509::path
- *       x509::path()
+ *    x509::path()
  *
- *       x509::path::add_trust_anchor(Cert)
+ *       add_trust_anchor(Cert)
  *          ->
  *             trust_anchor_index   (int)
  *                [-1, size_t]
  *
- *       x509::path::add_cert(Cert)
+ *       add_cert(Cert)
  *          ->
  *             cert_index   (int)
  *                [-1, size_t]
  *
- *       x509::path::add_crl(CRL)
+ *       add_crl(CRL)
  *          ->
  *             crl_index   (int)
  *                [-1, size_t]
  *
- *       x509::path::set_response(reg_index)
+ *       set_response(reg_index)
  *
- *       x509::path::set_time(time)
+ *       set_time(time)
  *
- *       x509::path::set_target_cert(cert_index)
+ *       set_target_cert(cert_index)
  *
- *       x509::path::set_algorithm(signature_id, IAlgorithm)
+ *       set_algorithm(signature_id, IAlgorithm)
  *
- *       x509::path::set_crl_check(crl_check)
+ *       set_crl_check(crl_check)
  *
- *       x509::path::_SetTrustAnchors(trustAnchors)
+ *       _SetTrustAnchors(trustAnchors)
  *
- *       x509::path::_GetTrustAnchors() const
+ *       _GetTrustAnchors() const
  *          ->
  *             trustAnchors   (T[])
  *
- *       x509::path::process()
+ *       process()
  *
- *       x509::path::state() const
+ *       state() const
  *          ->
  *             state_value   (int)
  *
- *       x509::path::uri() const
+ *       uri() const
  *          ->
  *             uRI   (string)
  *
- *       x509::path::mime() const
+ *       mime() const
  *          ->
  *             mIME   (string)
  *
- *       x509::path::length() const
+ *       length() const
  *          ->
  *             pathLen   (size_t)
  *
- *       x509::path::cert(index) const
+ *       cert(index) const
  *          ->
  *             certStruct   (nullable T)
  *
- *       x509::path::dispose()
+ *       dispose()
  *
  *    public_id   (int)
  *    private_id   (int)
+ *       x509::ML_DSA_87
+ *       x509::ML_DSA_65
+ *       x509::ML_DSA_44
  *       x509::Ed25519
  *       x509::RSA
  *
@@ -2942,6 +3239,9 @@ var _GET_SIGNATURE;
  *    nonRepudiation   (bool)      keyUsage
  *
  *    signature_id   (int)
+ *       x509::ML_DSA_87
+ *       x509::ML_DSA_65
+ *       x509::ML_DSA_44
  *       x509::Ed25519
  *       x509::sha256RSA
  *       x509::sha1RSA
@@ -2981,6 +3281,9 @@ var _GET_SIGNATURE;
  *    time   (long)
  *
  *    IAlgorithm   (T)
+ *       mldsa::mldsa87
+ *       mldsa::mldsa65
+ *       mldsa::mldsa44
  *       ec25519
  *       pkcs15::sha256rsa
  *       pkcs15::sha1rsa
@@ -3028,6 +3331,9 @@ var _GET_SIGNATURE;
  *    index   (size_t)
  */
 
+/* const int */ x509.ML_DSA_87 = _ID_MLDSA87;
+/* const int */ x509.ML_DSA_65 = _ID_MLDSA65;
+/* const int */ x509.ML_DSA_44 = _ID_MLDSA44;
 /* const int */ x509.Ed25519 = _ID_ED25519;
 /* const int */ x509.sha256RSA = _ID_SHA256RSA;
 /* const int */ x509.sha1RSA = _ID_SHA1RSA;
@@ -4276,7 +4582,37 @@ var _GET_SIGNATURE;
       u = SPKI1_[1];
       v = SPKI2_[1];
 
-      if (SPKI1_[0] === _ID_ED25519)
+      if (SPKI1_[0] === _ID_MLDSA87)
+         {
+         for (s = 0; s < 2592; ++ s)
+            {
+            if (u[s] !== v[s])
+               {
+               return (false);
+               }
+            }
+         }
+      else if (SPKI1_[0] === _ID_MLDSA65)
+         {
+         for (s = 0; s < 1952; ++ s)
+            {
+            if (u[s] !== v[s])
+               {
+               return (false);
+               }
+            }
+         }
+      else if (SPKI1_[0] === _ID_MLDSA44)
+         {
+         for (s = 0; s < 1312; ++ s)
+            {
+            if (u[s] !== v[s])
+               {
+               return (false);
+               }
+            }
+         }
+      else if (SPKI1_[0] === _ID_ED25519)
          {
          for (s = 0; s < 32; ++ s)
             {
@@ -4349,7 +4685,14 @@ var _GET_SIGNATURE;
          /* const char[] */Message_,
          /* const T */Signature_) /* const */
       {
-      if (Signature_Id_ === _ID_ED25519)
+      if (Signature_Id_ === _ID_MLDSA87
+            || Signature_Id_ === _ID_MLDSA65
+            || Signature_Id_ === _ID_MLDSA44)
+         {
+         return (_IAlgorithm[Signature_Id_].verify_mldsa_signature(
+            Public_, Message_, Signature_));
+         }
+      else if (Signature_Id_ === _ID_ED25519)
          {
          return (_IAlgorithm[Signature_Id_].verify_eddsa_signature(
             Public_, Message_, Signature_));
