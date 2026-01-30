@@ -1,5 +1,5 @@
 ﻿/*
- * 1.0.100.0
+ * 1.0.101.0
  * COPYRIGHT (c) 2026 mScroll
  */
 
@@ -37,6 +37,7 @@ var _ONLOAD = "onload";
 var _ONABORT = "onabort";
 var _ONERROR = "onerror";
 var _ONTIMEOUT = "ontimeout";
+var _TYPEOF_STRING = typeof "";
 var _NULL = null;
 
 var _INTF = intf;
@@ -72,6 +73,7 @@ var _EMPTY;
 var _ZERO;
 var _SLASH;
 var _QUESTION;
+var _NUMBER_SIGN;
 var _CHARSET;
 var _MSAL_SCOPES;
 var _MSAL_SELECT_ACCOUNT;
@@ -196,6 +198,7 @@ var _Callback;
 /* static const string */ _ZERO = "0";
 /* static const string */ _SLASH = "/";
 /* static const string */ _QUESTION = "?";
+/* static const string */ _NUMBER_SIGN = "#";
 /* static const string[] */ _CHARSET =
    [
    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
@@ -259,17 +262,20 @@ var _Callback;
 
 /* string */ _ENCODE = function (/* string */Value_, /* bool */Container_) /* const */
    {
-   var u = _EMPTY;
-   var v = 0;
+   var u;
+   var v;
    var w;
    var s;
 
+   if (Container_ && Value_[_INDEXOF](_SLASH) !== _EOF)
+      {
+      return (_EMPTY);
+      }
+
    try
       {
-      if (Container_ && Value_[_INDEXOF](_SLASH) !== _EOF)
-         {
-         return (_EMPTY);
-         }
+      u = _EMPTY;
+      v = 0;
 
       for (s = 0; s < Value_[_LENGTH]; )
          {
@@ -290,7 +296,8 @@ var _Callback;
             ++ s;
             v = s;
             }
-         else if (w === _QUESTION)
+         else if (w === _QUESTION
+               || w === _NUMBER_SIGN)
             {
             if (s === 0)
                {
@@ -536,9 +543,36 @@ var _Callback;
 
 /* void */ _MSAL_THEN = function (/* T */MsalResponse_)
    {
-   _SignedIn = true;
-   _RetryCount = 0;
-   _REQUEST(MsalResponse_.accessToken);
+   var u;
+
+   try
+      {
+      u = MsalResponse_.accessToken;
+
+      if (typeof u !== _TYPEOF_STRING
+            || u === _EMPTY)
+         {
+         u = _NULL;
+         }
+      }
+   catch (e)
+      {
+      u = _NULL;
+      }
+
+   if (u !== _NULL)
+      {
+      _SignedIn = true;
+      _RetryCount = 0;
+      _REQUEST(u);
+      }
+   else
+      {
+      _RetryCount = 0;
+      _Status = _MSAL_ERROR;
+      _Ready = true;
+      _Callback();
+      }
    };
 
 /* void */ _MSAL_CATCH = function (/* T */)
@@ -687,6 +721,12 @@ var _Callback;
    try
       {
       u = MsalResponse_.account.username;
+
+      if (typeof u !== _TYPEOF_STRING
+            || u === _EMPTY)
+         {
+         u = _NULL;
+         }
       }
    catch (e)
       {
@@ -695,7 +735,7 @@ var _Callback;
 
    v = _Rfc822Name === _EMPTY;
 
-   if (v || _Rfc822Name === u)
+   if (u !== _NULL && (v || _Rfc822Name === u))
       {
       _Rfc822Name = u;
       _SignedIn = true;
@@ -760,8 +800,8 @@ var _Callback;
  *
  *    azbsdrv::ready() const
  *       ->
- *          true      upload/download available
- *          false      upload/download not available
+ *          true      upload/download/remove available
+ *          false      upload/download/remove not available
  *
  *    azbsdrv::response() const
  *       ->
@@ -870,16 +910,27 @@ var _Callback;
    {
    if (_MsalInstance === _NULL && _CHARSET_CHECK(StorageAccount_))
       {
-      _MsalInstance = new _MSAL.PublicClientApplication({
-         auth:
-            {
-            clientId: ClientId_,
-            authority: Authority_
-            }
-         });
-      _Rfc822Name = Rfc822Name_;
-      _StorageAccount = _HTTPS + StorageAccount_ + _DNS_NAME;
-      _Ready = _Rfc822Name !== _EMPTY;
+      try
+         {
+         _MsalInstance = new _MSAL.PublicClientApplication({
+            auth:
+               {
+               clientId: ClientId_,
+               authority: Authority_
+               }
+            });
+         }
+      catch (e)
+         {
+         _MsalInstance = _NULL;
+         }
+
+      if (_MsalInstance !== _NULL)
+         {
+         _Rfc822Name = Rfc822Name_;
+         _StorageAccount = _HTTPS + StorageAccount_ + _DNS_NAME;
+         _Ready = _Rfc822Name !== _EMPTY;
+         }
       }
    };
 
