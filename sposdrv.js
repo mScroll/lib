@@ -1,5 +1,5 @@
 ﻿/*
- * 1.0.100.0
+ * 1.0.101.0
  * COPYRIGHT (c) 2026 mScroll
  */
 
@@ -149,6 +149,7 @@ var _EXPLICIT_MSAL_CATCH;
 var _MsalInstance;
 var _Rfc822Name;
 var _SpSite;
+var _RedirectUri;
 var _SiteId;
 var _DriveId;
 var _FolderCache;
@@ -1362,6 +1363,7 @@ var _Callback;
 /* static T */ _MsalInstance = _NULL;
 /* static string */ _Rfc822Name = _EMPTY;
 /* static string */ _SpSite = _EMPTY;
+/* static string */ _RedirectUri = _EMPTY;
 /* static string */ _SiteId = _EMPTY;
 /* static T */ _DriveId = {};
 /* static T */ _FolderCache = {};
@@ -1429,6 +1431,8 @@ var _Callback;
  *
  *    sposdrv::callback(callbackFunction)
  *
+ *    sposdrv::redirect_uri(redirectUri)
+ *
  *    sposdrv::sign_in(interaction)
  *
  *    sposdrv::remove(library, path)
@@ -1486,6 +1490,8 @@ var _Callback;
  *
  *    callbackFunction   (void (*)(void))
  *
+ *    redirectUri   (string)
+ *
  *    interaction   (bool)
  *
  *    milliseconds   (long)      XMLHttpRequest.timeout
@@ -1534,13 +1540,27 @@ var _Callback;
             {
             try
                {
-               _MsalInstance = new _MSAL.PublicClientApplication({
-                  auth:
-                     {
-                     clientId: ClientId_,
-                     authority: Authority_
-                     }
-                  });
+               if (_RedirectUri === _EMPTY)
+                  {
+                  _MsalInstance = new _MSAL.PublicClientApplication({
+                     auth:
+                        {
+                        clientId: ClientId_,
+                        authority: Authority_
+                        }
+                     });
+                  }
+               else
+                  {
+                  _MsalInstance = new _MSAL.PublicClientApplication({
+                     auth:
+                        {
+                        clientId: ClientId_,
+                        authority: Authority_,
+                        redirectUri: _RedirectUri
+                        }
+                     });
+                  }
                }
             catch (e)
                {
@@ -1650,6 +1670,14 @@ var _Callback;
    if (_ExplicitSignIn && (_Ready || _Rfc822Name === _EMPTY))
       {
       _Callback = Callback_;
+      }
+   };
+
+/* void */ sposdrv.redirect_uri = function (/* string */RedirectUri_)
+   {
+   if (_MsalInstance === _NULL)
+      {
+      _RedirectUri = RedirectUri_;
       }
    };
 
